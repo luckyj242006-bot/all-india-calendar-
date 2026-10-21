@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>OneCalendar India</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Mukta:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: mobile app. Today dashboard (dark teal hero), month grid with tithi + festival markers, reminders list, settings. Bottom tab bar. */
+:root{
+  --bg:#f3f6f5; --surface:#ffffff; --ink:#10252b; --muted:#566b70; --line:#d9e2e1;
+  --hero:#0f4650; --hero-ink:#e8f5f3; --hero-mute:#9cc5c5; --accent:#0d6a73; --accent-ink:#ffffff; --tint:#e1f0ee;
+  --fest:#cf4128; --fast:#0d7f86; --gold:#c98b00; --moon:#f4e9c4; --moon-dark:#16343a; --danger:#b3261e;
+  --wd0:#e8622b; --wd1:#b9c6c9; --wd2:#d23b3b; --wd3:#3a9d5d; --wd4:#e3b505; --wd5:#e58fb0; --wd6:#3d5a9c;
+  --font-display:'Bricolage Grotesque','Mukta','Noto Sans Devanagari',system-ui,sans-serif;
+  --font-body:'Mukta','Noto Sans Devanagari','Noto Sans Tamil','Noto Sans Bengali','Noto Sans Gujarati',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0a1417;--surface:#12212a;--ink:#e5f0ef;--muted:#93aaae;--line:#223540;--hero:#0e3d46;--hero-ink:#e8f5f3;--hero-mute:#8fbdbd;--accent:#4fc3cb;--accent-ink:#08181c;--tint:#17323a;--fest:#ff7a5f;--fast:#4fc3cb;--gold:#e8b53a;--moon:#f4e9c4;--moon-dark:#0a1c21;--danger:#ff8a80;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0a1417;--surface:#12212a;--ink:#e5f0ef;--muted:#93aaae;--line:#223540;--hero:#0e3d46;--hero-ink:#e8f5f3;--hero-mute:#8fbdbd;--accent:#4fc3cb;--accent-ink:#08181c;--tint:#17323a;--fest:#ff7a5f;--fast:#4fc3cb;--gold:#e8b53a;--moon:#f4e9c4;--moon-dark:#0a1c21;--danger:#ff8a80;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.4;padding-block:14px 96px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h2,h3{font-family:var(--font-display);margin:0;font-weight:700;letter-spacing:-.01em}
+.sec{font-size:.78rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:2px 0 -6px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+/* hero */
+.hero{background:var(--hero);color:var(--hero-ink);border-radius:22px;padding:16px 18px 16px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.hero-top{display:flex;justify-content:space-between;gap:8px;font-size:.85rem;color:var(--hero-mute);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.hero-main{display:flex;align-items:center;gap:14px}
+.bignum{font-family:var(--font-display);font-weight:700;font-size:4.6rem;line-height:.9;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.hero-mo{display:flex;flex-direction:column;line-height:1.15;flex:1;min-width:0}
+.hero-mo b{font-family:var(--font-display);font-size:1.4rem}
+.hero-mo span{color:var(--hero-mute);font-size:1rem}
+.moon{flex:none}
+.hero-hindu{font-family:var(--font-display);font-size:1.3rem;line-height:1.2}
+.hero-sub{font-size:.85rem;color:var(--hero-mute);margin-top:-6px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:4px}
+.stat{background:rgba(255,255,255,.08);border-radius:12px;padding:8px 10px;min-width:0}
+.stat small{display:block;font-size:.7rem;letter-spacing:.07em;text-transform:uppercase;color:var(--hero-mute);font-weight:600}
+.stat b{display:block;font-size:.95rem;font-weight:600;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.hbtn{align-self:flex-start;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);color:var(--hero-ink);border-radius:999px;padding:7px 14px;font-weight:600;font-size:.85rem;min-height:38px}
+.wdbar{position:absolute;left:0;right:0;top:0;height:5px;background:var(--wdc,var(--gold))}
+/* next card */
+.next{display:flex;gap:12px;align-items:center}
+.next .when{flex:none;text-align:center;min-width:64px;background:var(--tint);border-radius:12px;padding:8px 6px}
+.next .when b{display:block;font-family:var(--font-display);font-size:1.5rem;line-height:1;font-variant-numeric:tabular-nums}
+.next .when small{font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.next .what{flex:1;min-width:0}
+.next .what b{display:block;font-size:1.1rem;line-height:1.2;font-weight:600;overflow-wrap:anywhere}
+.next .what span{font-size:.85rem;color:var(--muted)}
+.pill{display:inline-block;border-radius:999px;padding:2px 9px;font-size:.72rem;font-weight:700;letter-spacing:.03em;background:var(--tint);color:var(--ink)}
+.pill.warn{background:transparent;border:1px solid var(--gold);color:var(--gold)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 12px;font-weight:600;font-size:.88rem;min-height:38px}
+.btn.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent}
+.btn.warnbtn{color:var(--danger)}
+/* quick tiles */
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tile{border:0;text-align:left;border-radius:14px;padding:10px 10px 11px;display:flex;flex-direction:column;gap:2px;min-width:0;color:#fff}
+.tile small{font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;opacity:.9}
+.tile b{font-family:var(--font-display);font-size:1.05rem;line-height:1.15;overflow-wrap:anywhere}
+.tile span{font-size:.8rem;opacity:.92}
+.tile.t1{background:#b8352a}.tile.t2{background:#0b6d74}.tile.t3{background:#5a4b9c}
+/* rows */
+.rows{display:flex;flex-direction:column}
+.crow{display:grid;grid-template-columns:minmax(0,38%) minmax(0,1fr);gap:10px;padding:10px 0;border-top:1px solid var(--line);align-items:baseline}
+.crow:first-child{border-top:0;padding-top:2px}
+.crow:last-child{padding-bottom:2px}
+.crow dt{font-size:.82rem;color:var(--muted);font-weight:600}
+.crow dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.crow dd small{display:block;font-weight:400;color:var(--muted);font-size:.8rem}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:5px 12px;font-size:.85rem;font-weight:600;min-height:34px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.list{display:flex;flex-direction:column}
+.li{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line);width:100%;text-align:left;background:none;border-left:0;border-right:0;border-bottom:0}
+.li:first-child{border-top:0}
+.li .dt{flex:none;width:44px;text-align:center;line-height:1.05}
+.li .dt b{display:block;font-family:var(--font-display);font-size:1.3rem;font-variant-numeric:tabular-nums}
+.li .dt small{font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.li .tx{flex:1;min-width:0}
+.li .tx b{display:block;font-weight:600;overflow-wrap:anywhere}
+.li .tx span{font-size:.82rem;color:var(--muted)}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--c)}
+.note{font-size:.88rem;color:var(--muted);margin:0}
+.note b{color:var(--ink)}
+/* month */
+.mhead{display:flex;align-items:center;gap:8px}
+.mhead .t{flex:1;min-width:0}
+.mhead h2{font-size:1.5rem;line-height:1.1}
+.mhead .t span{font-size:.85rem;color:var(--muted)}
+.ib{border:1px solid var(--line);background:var(--surface);border-radius:10px;height:40px;min-width:40px;padding:0 10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.seg{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.dow,.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.dow{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:-6px}
+.dow div:first-child.sun,.dow .sun{color:var(--wd0)}
+.grid{gap:3px}
+.cell{min-width:0;aspect-ratio:1/1.22;border:1.5px solid transparent;background:var(--surface);border-radius:10px;padding:4px 2px 3px;display:flex;flex-direction:column;align-items:center;gap:1px;position:relative}
+.cell.out{opacity:.45}
+.cell .n{font-weight:700;font-size:1rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.cell.sun .n{color:var(--wd0)}
+.cell .s{font-size:.6rem;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2;padding:0 1px}
+.cell .s.first{color:var(--ink);font-weight:700}
+.cell.today{border-color:var(--accent)}
+.cell.today .n{color:var(--accent)}
+.cell.sel{background:var(--tint);border-color:var(--accent)}
+.marks{display:flex;gap:3px;margin-top:auto;height:6px;align-items:center}
+.marks i{width:6px;height:6px;border-radius:50%;background:var(--c)}
+.mg{position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;border:1.5px solid var(--muted)}
+.mg.a{background:var(--muted)}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.det{display:flex;flex-direction:column;gap:12px}
+.dhead{display:flex;gap:12px;align-items:center}
+.dhead .stripe{width:6px;align-self:stretch;border-radius:4px;background:var(--wdc)}
+.dhead h3{font-size:1.25rem;line-height:1.15}
+.dhead small{color:var(--muted);font-size:.85rem}
+.ob{border-top:1px solid var(--line);padding-top:10px;display:flex;gap:10px;align-items:flex-start}
+.ob .tx{flex:1;min-width:0}
+.ob .tx b{display:block;font-weight:700;overflow-wrap:anywhere}
+.ob .tx p{margin:2px 0 4px;font-size:.88rem;color:var(--muted)}
+.empty{border:1px dashed var(--line);border-radius:14px;padding:18px 14px;text-align:center;color:var(--muted)}
+/* settings */
+.set{display:flex;flex-direction:column}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+.srow:first-of-type{border-top:0}
+.srow label{flex:1;min-width:0;font-weight:600}
+.srow label small{display:block;font-weight:400;color:var(--muted);font-size:.8rem}
+.srow select{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-height:40px;max-width:55%}
+.sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-radius:999px;background:var(--line);position:relative;flex:none;border:0;cursor:pointer;transition:background .15s}
+.sw::after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .15s}
+.sw:checked{background:var(--accent)}
+.sw:checked::after{transform:translateX(18px)}
+.src a{color:var(--accent);font-weight:600}
+/* reminders */
+.rem{display:flex;flex-direction:column;gap:10px}
+.rem .top{display:flex;gap:12px;align-items:center}
+.rem select{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 10px;min-height:38px}
+.rem .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+/* tab bar */
+.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;padding:6px max(10px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));z-index:5}
+.tabs button{flex:1;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:.74rem;font-weight:700;color:var(--muted);border-radius:12px;min-width:0}
+.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs button[aria-current="page"]{color:var(--accent)}
+.tabs .in{width:100%;max-width:560px;margin:0 auto;display:flex}
+@media (prefers-reduced-motion:no-preference){.panel{animation:fade .18s ease-out}@keyframes fade{from{opacity:.4;transform:translateY(6px)}}}
+html,body{margin:0}
+body{-webkit-text-size-adjust:100%}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+<nav class="tabs" aria-label="Sections"><div class="in" id="tabs"></div></nav>
+<script>
+/* OneCalendar engine: approximate astronomy (Meeus low-precision series) for tithi, nakshatra, lunar month and solar-month calendars. */
+var Eng=(function(){
+var RAD=Math.PI/180;
+function norm(x){x=x%360;return x<0?x+360:x}
+function jdUT(y,m,d,h){return Date.UTC(y,m-1,d,h||0)/86400000+2440587.5}
+function sunLon(jd){ // tropical, degrees
+  var T=(jd-2451545)/36525;
+  var L0=280.46646+36000.76983*T, M=357.52911+35999.05029*T;
+  var C=(1.914602-0.004817*T)*Math.sin(M*RAD)+0.019993*Math.sin(2*M*RAD)+0.000289*Math.sin(3*M*RAD);
+  return norm(L0+C-0.00569);
+}
+function moonLon(jd){
+  var T=(jd-2451545)/36525;
+  var Lp=218.3164477+481267.88123421*T, D=297.8501921+445267.1114034*T,
+      M=357.5291092+35999.0502909*T, Mp=134.9633964+477198.8675055*T, F=93.2720950+483202.0175233*T;
+  var s=function(x){return Math.sin(x*RAD)};
+  var l=Lp+6.288774*s(Mp)+1.274027*s(2*D-Mp)+0.658314*s(2*D)+0.213618*s(2*Mp)-0.185116*s(M)-0.114332*s(2*F)
+   +0.058793*s(2*D-2*Mp)+0.057066*s(2*D-M-Mp)+0.053322*s(2*D+Mp)+0.045758*s(2*D-M)-0.040923*s(M-Mp)
+   -0.034720*s(D)-0.030383*s(M+Mp)+0.015327*s(2*D-2*F)-0.012528*s(Mp+2*F)+0.010980*s(Mp-2*F)
+   +0.010675*s(4*D-Mp)+0.010034*s(3*Mp)+0.008548*s(4*D-2*Mp)-0.007888*s(2*D+M-Mp)-0.006766*s(2*D+M)
+   -0.005163*s(D-Mp)+0.004987*s(D+M)+0.004036*s(2*D-M+Mp)+0.003994*s(2*Mp+2*D);
+  return norm(l-0.00478*s(125.04-1934.136*T));
+}
+function ayanamsa(jd){return 23.85306+((jd-2451545)/365.25)*0.013969} // Lahiri, approx
+function sunSid(jd){return norm(sunLon(jd)-ayanamsa(jd))}
+function moonSid(jd){return norm(moonLon(jd)-ayanamsa(jd))}
+function elong(jd){return norm(moonLon(jd)-sunLon(jd))}
+function signedElong(jd){var e=elong(jd);return e>180?e-360:e}
+function newMoonBefore(jd){ // latest new moon at or before jd
+  var t=jd-elong(jd)/12.19;
+  for(var i=0;i<8;i++){t-=signedElong(t)/12.19}
+  if(t>jd+0.01)t-=29.53;
+  return t;
+}
+function newMoonAfter(jd){return newMoonBefore(jd+29.53*1.0+1.2)>jd?newMoonBefore(jd+29.53*1.0+1.2):newMoonBefore(jd+29.53+3)}
+// sunrise / sunset, minutes from local midnight for tz (default IST)
+function sunTimes(y,m,d,lat,lon,tz){
+  tz=tz==null?5.5:tz;
+  var jd=jdUT(y,m,d,12-tz), T=(jd-2451545)/36525;
+  var L0=norm(280.46646+36000.76983*T), M=357.52911+35999.05029*T, e=0.016708634-0.000042037*T;
+  var C=(1.914602-0.004817*T)*Math.sin(M*RAD)+0.019993*Math.sin(2*M*RAD);
+  var lam=L0+C-0.00569;
+  var eps=23.439291-0.0130042*T;
+  var decl=Math.asin(Math.sin(eps*RAD)*Math.sin(lam*RAD));
+  var yy=Math.pow(Math.tan(eps*RAD/2),2);
+  var eq=4/RAD*(yy*Math.sin(2*L0*RAD)-2*e*Math.sin(M*RAD)+4*e*yy*Math.sin(M*RAD)*Math.cos(2*L0*RAD)-0.5*yy*yy*Math.sin(4*L0*RAD)-1.25*e*e*Math.sin(2*M*RAD));
+  var ha=Math.acos((Math.cos(90.833*RAD)-Math.sin(lat*RAD)*Math.sin(decl))/(Math.cos(lat*RAD)*Math.cos(decl)))/RAD;
+  var noon=720-4*lon-eq+tz*60;
+  return {rise:noon-4*ha,set:noon+4*ha,noon:noon};
+}
+var TITHI_EN=['Pratipada','Dwitiya','Tritiya','Chaturthi','Panchami','Shashthi','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi'];
+var TITHI_HI=['प्रतिपदा','द्वितीया','तृतीया','चतुर्थी','पंचमी','षष्ठी','सप्तमी','अष्टमी','नवमी','दशमी','एकादशी','द्वादशी','त्रयोदशी','चतुर्दशी'];
+var MONTH_EN=['Chaitra','Vaishakha','Jyeshtha','Ashadha','Shravana','Bhadrapada','Ashvin','Kartik','Margashirsha','Pausha','Magha','Phalguna'];
+var MONTH_HI=['चैत्र','वैशाख','ज्येष्ठ','आषाढ़','श्रावण','भाद्रपद','आश्विन','कार्तिक','मार्गशीर्ष','पौष','माघ','फाल्गुन'];
+var NAK_EN=['Ashwini','Bharani','Krittika','Rohini','Mrigashira','Ardra','Punarvasu','Pushya','Ashlesha','Magha','Purva Phalguni','Uttara Phalguni','Hasta','Chitra','Swati','Vishakha','Anuradha','Jyeshtha','Mula','Purva Ashadha','Uttara Ashadha','Shravana','Dhanishta','Shatabhisha','Purva Bhadrapada','Uttara Bhadrapada','Revati'];
+var NAK_HI=['अश्विनी','भरणी','कृत्तिका','रोहिणी','मृगशिरा','आर्द्रा','पुनर्वसु','पुष्य','आश्लेषा','मघा','पूर्वा फाल्गुनी','उत्तरा फाल्गुनी','हस्त','चित्रा','स्वाति','विशाखा','अनुराधा','ज्येष्ठा','मूल','पूर्वाषाढ़ा','उत्तराषाढ़ा','श्रवण','धनिष्ठा','शतभिषा','पूर्वभाद्रपदा','उत्तरभाद्रपदा','रेवती'];
+var TAMIL=['Chithirai','Vaikasi','Aani','Aadi','Aavani','Purattasi','Aippasi','Karthigai','Margazhi','Thai','Maasi','Panguni'];
+var TAMIL_TA=['சித்திரை','வைகாசி','ஆனி','ஆடி','ஆவணி','புரட்டாசி','ஐப்பசி','கார்த்திகை','மார்கழி','தை','மாசி','பங்குனி'];
+var BENGALI=['Boishakh','Joishtho','Asharh','Srabon','Bhadro','Ashwin','Kartik','Agrahayan','Poush','Magh','Falgun','Choitro'];
+var BENGALI_BN=['বৈশাখ','জ্যৈষ্ঠ','আষাঢ়','শ্রাবণ','ভাদ্র','আশ্বিন','কার্তিক','অগ্রহায়ণ','পৌষ','মাঘ','ফাল্গুন','চৈত্র'];
+var GUJ=['Kartak','Magshar','Posh','Maha','Fagan','Chaitra','Vaishakh','Jeth','Ashadh','Shravan','Bhadarvo','Aso']; // indexed from Kartik
+var GUJ_GU=['કારતક','માગશર','પોષ','મહા','ફાગણ','ચૈત્ર','વૈશાખ','જેઠ','અષાઢ','શ્રાવણ','ભાદરવો','આસો'];
+var NAT=['Chaitra','Vaishakha','Jyeshtha','Ashadha','Shravana','Bhadra','Ashvin','Kartika','Agrahayana','Pausha','Magha','Phalguna'];
+var NAT_HI=['चैत्र','वैशाख','ज्येष्ठ','आषाढ़','श्रावण','भाद्र','आश्विन','कार्तिक','अग्रहायण','पौष','माघ','फाल्गुन'];
+
+function isLeap(y){return (y%4===0&&y%100!==0)||y%400===0}
+function nationalDate(y,m,d){ // Indian National Calendar (Saka civil)
+  var start=Date.UTC(y,2,isLeap(y)?21:22), t=Date.UTC(y,m-1,d), yr=y-78;
+  if(t<start){y=y-1;start=Date.UTC(y,2,isLeap(y)?21:22);yr=y-78}
+  var n=Math.round((t-start)/86400000), lens=[isLeap(y)?31:30,31,31,31,31,31,30,30,30,30,30,30], i=0;
+  while(n>=lens[i]){n-=lens[i];i++}
+  return {d:n+1,m:i,y:yr};
+}
+function rashiAt(jd){return Math.floor(sunSid(jd)/30)}
+function solarMonth(y,m,d,refHourIST){ // returns {m:rashiIdx, d:dayOfMonth} using the rashi at refHourIST each day
+  var ref=function(dd){return jdUT(dd.y,dd.m,dd.d,refHourIST-5.5)};
+  var cur={y:y,m:m,d:d}, r=rashiAt(ref(cur)), day=1;
+  for(var i=0;i<33;i++){
+    var p=new Date(Date.UTC(cur.y,cur.m-1,cur.d-1));
+    var pd={y:p.getUTCFullYear(),m:p.getUTCMonth()+1,d:p.getUTCDate()};
+    if(rashiAt(ref(pd))!==r)break;
+    day++;cur=pd;
+  }
+  return {m:r,d:day};
+}
+function compute(y,m,d,city){
+  city=city||{lat:28.61,lon:77.21};
+  var st=sunTimes(y,m,d,city.lat,city.lon,5.5);
+  var jd=jdUT(y,m,d,0)+(st.rise-330)/1440; // sunrise instant (UT)
+  var e=elong(jd), tIdx=Math.floor(e/12); // 0..29
+  var paksha=tIdx<15?'S':'K', tn=(tIdx%15)+1; // tithi number inside paksha
+  var nm0=newMoonBefore(jd), nm1=newMoonAfter(nm0+1);
+  var r0=rashiAt(nm0+0.02), r1=rashiAt(nm1+0.02);
+  var adhika=(r0===r1);
+  var mon=(r0+1)%12;
+  var purni=paksha==='K'?(mon+1)%12:mon;
+  var chaitradi=y+57; // refined below
+  if(m<=2||(m===3&&(mon===10||mon===11||(mon===0&&false))))chaitradi=y+56;
+  if(m===3&&mon===11)chaitradi=y+56;
+  if(m===3&&mon===0)chaitradi=y+57;
+  if(m===3&&mon===10)chaitradi=y+56;
+  var gujYear=(mon>=0&&mon<=6)?chaitradi-1:chaitradi;
+  var nat=nationalDate(y,m,d);
+  var tam=solarMonth(y,m,d,18), ben=solarMonth(y,m,d,0);
+  var bYear=(ben.m<=8&&m>=4)?y-593:y-594;
+  var tamYear=null;
+  var nak=Math.floor(moonSid(jd)/(360/27));
+  return {e:e,y:y,m:m,d:d,rise:st.rise,set:st.set,tithiIdx:tIdx,tithi:tn,paksha:paksha,monthIdx:mon,adhika:adhika,purniIdx:purni,
+    vs:chaitradi,vsGuj:gujYear,shaka:chaitradi-135,nat:nat,tamil:tam,bengali:{d:ben.d,m:ben.m,y:bYear},nak:nak,
+    gujMonth:(mon+5)%12, // Kartik(7)->0
+    sunSidDeg:sunSid(jd),moonSidDeg:moonSid(jd)};
+}
+function tithiName(idx,lang){ // idx 0..29
+  var n=(idx%15), p=idx<15;
+  if(n===14)return p?(lang==='hi'?'पूर्णिमा':'Purnima'):(lang==='hi'?'अमावस्या':'Amavasya');
+  return (lang==='hi'?TITHI_HI:TITHI_EN)[n];
+}
+function fmtMin(min){min=Math.round(min);var h=Math.floor(min/60)%24,m=min%60,ap=h>=12?'pm':'am';h=h%12||12;return h+':'+(m<10?'0':'')+m+' '+ap}
+return {compute:compute,tithiName:tithiName,fmtMin:fmtMin,sunTimes:sunTimes,MONTH_EN:MONTH_EN,MONTH_HI:MONTH_HI,NAK_EN:NAK_EN,NAK_HI:NAK_HI,
+  TAMIL:TAMIL,TAMIL_TA:TAMIL_TA,BENGALI:BENGALI,BENGALI_BN:BENGALI_BN,GUJ:GUJ,GUJ_GU:GUJ_GU,NAT:NAT,NAT_HI:NAT_HI,TITHI_EN:TITHI_EN,TITHI_HI:TITHI_HI,
+  newMoonBefore:newMoonBefore,elong:elong,jdUT:jdUT};
+})();
+if(typeof module!=='undefined')module.exports=Eng;
+
+/* Festival table. cat: major | vrat | nat | regional(reg). chk: date may differ by a day. sup: suppresses calculated E(kadashi)/P(urnima)/A(mavasya) nearby. */
+var FEST=[
+['2026-10-19','Durga Ashtami','दुर्गा अष्टमी','major','','Eighth day of Navratri, devoted to Goddess Durga.'],
+['2026-10-20','Maha Navami','महानवमी','major','','Ninth day of Navratri.'],
+['2026-10-20','Dussehra (Vijayadashami)','दशहरा (विजयादशमी)','major','','Victory of good over evil, on the tenth day after Navratri begins.'],
+['2026-10-25','Sharad Purnima','शरद पूर्णिमा','major','P','Autumn full moon, observed with moonlit gatherings.'],
+['2026-10-29','Karwa Chauth','करवा चौथ','vrat','','Fast kept from sunrise until moonrise on Krishna Chaturthi.'],
+['2026-11-06','Dhanteras','धनतेरस','major','','First day of the Diwali festival days.'],
+['2026-11-08','Narak Chaturdashi','नरक चतुर्दशी','major','','Day before the main Diwali night.'],
+['2026-11-08','Diwali','दीपावली','major','A','Festival of lights on the new moon night of Ashvin (Kartik in the Purnimanta system).'],
+['2026-11-10','Govardhan Puja','गोवर्धन पूजा','major','','Day after Diwali amavasya, on Kartik Shukla Pratipada.'],
+['2026-11-10','Bestu Varas (Gujarati New Year)','बेस्तु वरस (गुजराती नव वर्ष)','regional','','New year of the Gujarati Vikram Samvat 2083.','gujarati'],
+['2026-11-11','Bhai Dooj','भाई दूज','major','','Celebrates the bond between brothers and sisters.'],
+['2026-11-15','Chhath Puja','छठ पूजा','major','','Sun worship observed mainly in Bihar, Jharkhand and eastern Uttar Pradesh.'],
+['2026-11-20','Dev Uthani Ekadashi','देव उठनी एकादशी','vrat','E','Marks the end of the four-month Chaturmas period.','','chk'],
+['2026-11-21','Tulsi Vivah','तुलसी विवाह','major','','Ceremonial wedding of the Tulsi plant.'],
+['2026-11-24','Kartik Purnima','कार्तिक पूर्णिमा','major','P','Full moon of Kartik, also Dev Deepawali.'],
+['2026-11-24','Guru Nanak Jayanti','गुरु नानक जयंती','major','P','Birth anniversary of Guru Nanak Dev.'],
+['2026-12-25','Christmas Day','क्रिसमस','nat','','Public holiday.'],
+['2027-01-15','Makar Sankranti','मकर संक्रांति','major','','Sun enters Makara. Falls on 15 January this year because the transit happens after sunset on the 14th.'],
+['2027-01-15','Pongal (Thai Pongal)','पोंगल (थाई पोंगल)','regional','','Tamil harvest festival on the first day of Thai.','tamil'],
+['2027-01-26','Republic Day','गणतंत्र दिवस','nat','','National holiday.'],
+['2027-02-11','Vasant Panchami','वसंत पंचमी','major','','Worship of Goddess Saraswati on Magha Shukla Panchami.'],
+['2027-03-06','Maha Shivratri','महाशिवरात्रि','vrat','','Night of Lord Shiva, with an all-night fast and vigil.'],
+['2027-03-21','Holika Dahan','होलिका दहन','major','','Bonfire on the evening before Holi.','','chk'],
+['2027-03-22','Holi','होली','major','P','Festival of colours on the day after Holika Dahan.'],
+['2027-04-07','Ugadi / Gudi Padwa','उगादी / गुड़ी पड़वा','major','','New year on Chaitra Shukla Pratipada in Karnataka, Andhra Pradesh, Telangana and Maharashtra.'],
+['2027-04-14','Puthandu (Tamil New Year)','पुथांडु (तमिल नव वर्ष)','regional','','First day of Chithirai.','tamil'],
+['2027-04-15','Pohela Boishakh','पोहेला बोइशाख','regional','','Bengali New Year, first day of Boishakh 1434.','bengali'],
+['2027-04-15','Ram Navami','राम नवमी','major','','Birth of Lord Rama on Chaitra Shukla Navami.'],
+['2027-04-20','Hanuman Jayanti','हनुमान जयंती','major','P','Birth of Lord Hanuman, on Chaitra Purnima.'],
+['2027-05-08','Akshaya Tritiya','अक्षय तृतीया','major','','Auspicious day on Vaishakha Shukla Tritiya.','','chk'],
+['2027-08-15','Independence Day','स्वतंत्रता दिवस','nat','','National holiday.'],
+['2027-08-17','Raksha Bandhan','रक्षा बंधन','major','P','Sisters tie rakhi on Shravana Purnima.'],
+['2027-08-25','Krishna Janmashtami','कृष्ण जन्माष्टमी','major','','Birth of Lord Krishna on Krishna Ashtami.'],
+['2027-09-04','Ganesh Chaturthi','गणेश चतुर्थी','major','','Begins the ten-day Ganeshotsav.'],
+['2027-09-30','Sharadiya Navratri begins','शारदीय नवरात्रि आरंभ','major','','Nine nights of Durga worship begin.','','chk'],
+['2027-10-02','Gandhi Jayanti','गांधी जयंती','nat','','National holiday.'],
+['2027-10-09','Dussehra (Vijayadashami)','दशहरा (विजयादशमी)','major','','Victory of good over evil.'],
+['2027-10-29','Diwali','दीपावली','major','A','Festival of lights.']
+].map(function(a){return {date:a[0],en:a[1],hi:a[2],cat:a[3],sup:a[4],d:a[5],reg:a[6]||'',chk:a[7]==='chk'}});
+
+(function(){
+var E=Eng;
+var $=function(id){return document.getElementById(id)};
+var CITIES=[
+ {id:'delhi',n:'Delhi',hi:'दिल्ली',lat:28.61,lon:77.21,sys:'purni'},
+ {id:'mumbai',n:'Mumbai',hi:'मुंबई',lat:19.08,lon:72.88,sys:'amanta'},
+ {id:'kolkata',n:'Kolkata',hi:'कोलकाता',lat:22.57,lon:88.36,sys:'amanta'},
+ {id:'chennai',n:'Chennai',hi:'चेन्नई',lat:13.08,lon:80.27,sys:'amanta'},
+ {id:'ahmedabad',n:'Ahmedabad',hi:'अहमदाबाद',lat:23.02,lon:72.57,sys:'amanta'},
+ {id:'bengaluru',n:'Bengaluru',hi:'बेंगलुरु',lat:12.97,lon:77.59,sys:'amanta'},
+ {id:'hyderabad',n:'Hyderabad',hi:'हैदराबाद',lat:17.39,lon:78.49,sys:'amanta'},
+ {id:'pune',n:'Pune',hi:'पुणे',lat:18.52,lon:73.86,sys:'amanta'}
+];
+var WD={en:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],hi:['रविवार','सोमवार','मंगलवार','बुधवार','गुरुवार','शुक्रवार','शनिवार']};
+var WDS={en:['S','M','T','W','T','F','S'],hi:['र','सो','मं','बु','गु','शु','श']};
+var MO={en:['January','February','March','April','May','June','July','August','September','October','November','December'],hi:['जनवरी','फ़रवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितंबर','अक्तूबर','नवंबर','दिसंबर']};
+var MOS={en:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],hi:['जन','फ़र','मार्च','अप्रै','मई','जून','जुला','अग','सित','अक्तू','नव','दिस']};
+var T={
+ en:{tToday:'Today',tMonth:'Month',tRemind:'Reminders',tSet:'Settings',sunrise:'Sunrise',sunset:'Sunset',nak:'Nakshatra',
+  atSunrise:'Tithi at sunrise in',next:'Next festival',todayW:'Today',tomorrow:'Tomorrow',inDays:function(n){return 'in '+n+' days'},days:'days',
+  every:'Today in every calendar',addCal:'Add a calendar',comingUp:'Coming up',qFast:'Fasting day',viewDay:'View day',copy:"Copy today's Panchang",copied:'Copied',qEk:'Ekadashi',qMoon:'Full / new moon',
+  why:'Why dates can differ',whyT:'A tithi starts and ends at any time of day, so festivals follow rules about which moment counts: sunrise, noon, moonrise or sunset. Sunrise also changes from city to city. Some months are named differently in the north (Purnimanta) and the south and west (Amanta). When two sources disagree, check the one your family follows.',
+  follow:'Remind me',following:'Following',legF:'Festival',legV:'Fasting day',legN:'Public holiday',legFull:'Full moon',legNew:'New moon',
+  panchang:'Hindu Panchang',vs:'Vikram Samvat',shaka:'Shaka Samvat (Hindu)',nat:'Indian National Calendar',tamil:'Tamil calendar',bengali:'Bengali calendar',gujarati:'Gujarati calendar',
+  greg:'Gregorian',shukla:'Shukla',krishna:'Krishna',adhika:'Adhika',tithi:'Tithi',paksha:'Paksha',
+  chk:'May differ by a day in your city',calc:'Calculated by this app',
+  noObs:'No festivals or fasting days on this date with your current filters.',outRange:'Festival dates are loaded for Oct 2026 to Oct 2027. Tithi, month and year are calculated for any date.',
+  remTitle:'Your reminders',remEmpty:'Nothing followed yet. Open a festival and tap Remind me.',remSame:'On the day',rem1:'1 day before',rem3:'3 days before',remOn:'Reminder on',remove:'Remove',
+  remNote:'This web version lists your reminders. Phone notifications arrive with the Android app.',sample:'Sample reminders are loaded so you can see how this works. Remove them any time.',
+  setCity:'City',setCityS:'Sunrise and tithi are worked out for this city',setLang:'Language',setWeek:'Week starts on',sun:'Sunday',mon:'Monday',
+  setSys:'Month naming',auto:'Match my city',amanta:'Amanta (month ends at new moon)',purni:'Purnimanta (month ends at full moon)',
+  setCals:'Calendars to show',setObs:'Observances to show',oMajor:'Major festivals',oVrat:'Fasting days and Ekadashi',oPa:'Full moon and new moon',oNat:'Public holidays',
+  acc:'Data and accuracy',accT:'Tithi, nakshatra, lunar month and sunrise are calculated in this app from the positions of the Sun and Moon. Results can be off near a tithi boundary. Festival dates for Oct to Nov 2026 come from Dekho Panchang. Most 2027 dates come from the India holiday list on Calendarific, the rest from Drik Panchang (computed for Houston) and checked against this app. Dates marked as possibly a day off are the ones where sources or calculations disagreed.',
+  sec:'Second line under each date',secTithi:'Tithi',
+  secA:'Second line',fastNote:'Some traditions observe the day after.',mark:'Mark'},
+ hi:{tToday:'आज',tMonth:'माह',tRemind:'अनुस्मारक',tSet:'सेटिंग',sunrise:'सूर्योदय',sunset:'सूर्यास्त',nak:'नक्षत्र',
+  atSunrise:'सूर्योदय पर तिथि,',next:'अगला त्योहार',todayW:'आज',tomorrow:'कल',inDays:function(n){return n+' दिन में'},days:'दिन',
+  every:'आज हर पंचांग में',addCal:'पंचांग जोड़ें',comingUp:'आगे आने वाले',qFast:'व्रत',viewDay:'दिन देखें',copy:'आज का पंचांग कॉपी करें',copied:'कॉपी हुआ',qEk:'एकादशी',qMoon:'पूर्णिमा / अमावस्या',
+  why:'तारीख़ें अलग क्यों हो सकती हैं',whyT:'तिथि दिन में किसी भी समय शुरू और ख़त्म होती है, इसलिए त्योहार किस क्षण को माना जाए इसके नियम होते हैं: सूर्योदय, दोपहर, चंद्रोदय या सूर्यास्त। सूर्योदय हर शहर में अलग होता है। उत्तर भारत में पूर्णिमांत और दक्षिण व पश्चिम में अमांत महीने चलते हैं। दो स्रोत अलग बताएँ तो वही देखें जो आपका परिवार मानता है।',
+  follow:'याद दिलाएँ',following:'फ़ॉलो किया',legF:'त्योहार',legV:'व्रत',legN:'सार्वजनिक छुट्टी',legFull:'पूर्णिमा',legNew:'अमावस्या',
+  panchang:'हिंदू पंचांग',vs:'विक्रम संवत',shaka:'शक संवत (हिंदू)',nat:'भारतीय राष्ट्रीय कैलेंडर',tamil:'तमिल कैलेंडर',bengali:'बंगाली कैलेंडर',gujarati:'गुजराती कैलेंडर',
+  greg:'ग्रेगोरियन',shukla:'शुक्ल',krishna:'कृष्ण',adhika:'अधिक',tithi:'तिथि',paksha:'पक्ष',
+  chk:'आपके शहर में एक दिन का अंतर हो सकता है',calc:'इस ऐप द्वारा गणना',
+  noObs:'आपके फ़िल्टर के अनुसार इस तारीख़ पर कोई त्योहार या व्रत नहीं है।',outRange:'त्योहारों की तारीख़ें अक्तूबर 2026 से अक्तूबर 2027 तक हैं। तिथि, महीना और वर्ष किसी भी तारीख़ के लिए गणना से मिलते हैं।',
+  remTitle:'आपके अनुस्मारक',remEmpty:'अभी कुछ फ़ॉलो नहीं किया। किसी त्योहार पर "याद दिलाएँ" दबाएँ।',remSame:'उसी दिन',rem1:'1 दिन पहले',rem3:'3 दिन पहले',remOn:'अनुस्मारक',remove:'हटाएँ',
+  remNote:'यह वेब संस्करण आपके अनुस्मारक सूची में दिखाता है। फ़ोन पर सूचनाएँ Android ऐप में आएँगी।',sample:'नमूने के अनुस्मारक जोड़े गए हैं। जब चाहें हटा दें।',
+  setCity:'शहर',setCityS:'सूर्योदय और तिथि इसी शहर के लिए निकलती है',setLang:'भाषा',setWeek:'सप्ताह शुरू होता है',sun:'रविवार',mon:'सोमवार',
+  setSys:'महीने का नाम',auto:'मेरे शहर के अनुसार',amanta:'अमांत (महीना अमावस्या पर ख़त्म)',purni:'पूर्णिमांत (महीना पूर्णिमा पर ख़त्म)',
+  setCals:'दिखाने वाले कैलेंडर',setObs:'दिखाने वाले अवसर',oMajor:'प्रमुख त्योहार',oVrat:'व्रत और एकादशी',oPa:'पूर्णिमा और अमावस्या',oNat:'सार्वजनिक छुट्टियाँ',
+  acc:'डेटा और सटीकता',accT:'तिथि, नक्षत्र, चंद्र मास और सूर्योदय इस ऐप में सूर्य और चंद्रमा की स्थिति से निकाले जाते हैं। तिथि बदलने के समय के आसपास अंतर हो सकता है। अक्तूबर से नवंबर 2026 की त्योहार तिथियाँ Dekho Panchang से हैं। 2027 की अधिकतर तिथियाँ Calendarific की भारत छुट्टी सूची से और बाकी Drik Panchang (ह्यूस्टन के लिए) से हैं, जिन्हें इस ऐप की गणना से जाँचा गया है। जहाँ स्रोत या गणना मेल नहीं खाई, वहाँ "एक दिन का अंतर" लिखा है।',
+  sec:'हर तारीख़ के नीचे की दूसरी पंक्ति',secTithi:'तिथि',secA:'दूसरी पंक्ति',fastNote:'कुछ परंपराओं में अगले दिन मनाते हैं।',mark:'चिह्न'}
+};
+var KEY='onecalendar-india-v1';
+var DEF={tab:'today',city:'delhi',lang:'en',ws:0,sys:'auto',second:'tithi',
+  cals:{panchang:1,vs:1,shaka:1,nat:0,tamil:0,bengali:0,gujarati:0},show:{major:1,vrat:1,pa:1,nat:1},follow:null};
+var cfg=load();
+var now=new Date();
+var TODAY=mk(now.getFullYear(),now.getMonth()+1,now.getDate());
+var view={y:now.getFullYear(),m:now.getMonth(),sel:TODAY};
+var C={};
+var FD={};
+FEST.forEach(function(f){(FD[f.date]=FD[f.date]||[]).push(f);f.id=f.date+'|'+f.en});
+if(cfg.follow===null){
+  var seed=[];
+  [['2026-10-29|Karwa Chauth'],['2026-11-08|Diwali']].forEach(function(a){seed.push({id:a[0],lead:1})});
+  cfg.follow=seed;cfg.sampled=true;save();
+}
+function load(){
+  var o=null;try{o=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}
+  var c=JSON.parse(JSON.stringify(DEF));
+  if(o){for(var k in o){if(typeof o[k]==='object'&&o[k]&&!Array.isArray(o[k])&&c[k]&&typeof c[k]==='object')for(var j in o[k])c[k][j]=o[k][j];else c[k]=o[k]}}
+  return c;
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){}}
+function t(k){var v=T[cfg.lang][k];return v===undefined?T.en[k]:v}
+function pad(n){return n<10?'0'+n:''+n}
+function mk(y,m,d){return y+'-'+pad(m)+'-'+pad(d)}
+function parse(ds){var p=ds.split('-');return {y:+p[0],m:+p[1],d:+p[2]}}
+function addDays(ds,n){var p=parse(ds),x=new Date(Date.UTC(p.y,p.m-1,p.d+n));return mk(x.getUTCFullYear(),x.getUTCMonth()+1,x.getUTCDate())}
+function diff(a,b){var p=parse(a),q=parse(b);return Math.round((Date.UTC(q.y,q.m-1,q.d)-Date.UTC(p.y,p.m-1,p.d))/86400000)}
+function wday(ds){var p=parse(ds);return new Date(Date.UTC(p.y,p.m-1,p.d)).getUTCDay()}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function city(){for(var i=0;i<CITIES.length;i++)if(CITIES[i].id===cfg.city)return CITIES[i];return CITIES[0]}
+function cname(c){return cfg.lang==='hi'?c.hi:c.n}
+function day(ds){var k=ds+'|'+cfg.city;if(C[k])return C[k];var p=parse(ds);return C[k]=E.compute(p.y,p.m,p.d,city())}
+function sysNow(){return cfg.sys==='auto'?city().sys:cfg.sys}
+function monthName(r){ // lunar month label for the day
+  var idx=(r.paksha==='K'&&sysNow()==='purni')?r.purniIdx:r.monthIdx;
+  var nm=(cfg.lang==='hi'?E.MONTH_HI:E.MONTH_EN)[idx];
+  return (r.adhika?t('adhika')+' ':'')+nm;
+}
+function pk(r){return r.paksha==='S'?t('shukla'):t('krishna')}
+function tname(r){return E.tithiName(r.tithiIdx,cfg.lang)}
+function fname(f){return cfg.lang==='hi'?f.hi:f.en}
+function fmtLong(ds){var p=parse(ds);return WD[cfg.lang][wday(ds)]+', '+p.d+' '+MO[cfg.lang][p.m-1]+' '+p.y}
+function fmtShort(ds){var p=parse(ds);return WD[cfg.lang][wday(ds)].slice(0,cfg.lang==='hi'?3:3)+', '+p.d+' '+MOS[cfg.lang][p.m-1]}
+
+/* observances */
+function regionOn(f){return !f.reg||cfg.cals[f.reg]}
+function catOn(f){
+  if(f.cat==='major')return cfg.show.major;
+  if(f.cat==='vrat')return cfg.show.vrat;
+  if(f.cat==='nat')return cfg.show.nat;
+  if(f.cat==='regional')return regionOn(f);
+  if(f.cat==='pa')return cfg.show.pa;
+  return true;
+}
+function nearSup(ds,ch){
+  for(var i=-1;i<=1;i++){var l=FD[addDays(ds,i)]||[];for(var j=0;j<l.length;j++)if((l[j].sup||'').indexOf(ch)>=0)return true}
+  return false;
+}
+function calcObs(ds,raw){
+  var out=[],r=day(ds),nx=day(addDays(ds,1)),pv=day(addDays(ds,-1)),ti=r.tithiIdx;
+  var ek=((ti===10||ti===25)&&pv.tithiIdx!==ti)||((ti===9||ti===24)&&(nx.tithiIdx===ti+2));
+  if(ek&&(raw||!nearSup(ds,'E')))out.push({id:ds+'|calc-ek',en:'Ekadashi ('+(r.paksha==='S'?'Shukla':'Krishna')+')',hi:'एकादशी ('+(r.paksha==='S'?'शुक्ल':'कृष्ण')+')',cat:'vrat',calc:1,ek:1,d:'Fasting day.'});
+  var pu=(ti===14)||(ti===13&&nx.tithiIdx===15);
+  if(pu&&(raw||!nearSup(ds,'P')))out.push({id:ds+'|calc-pu',en:'Purnima (full moon)',hi:'पूर्णिमा',cat:'pa',calc:1,moon:'p',d:'Full moon day.'});
+  var am=(ti===29)||(ti===28&&nx.tithiIdx===0);
+  if(am&&(raw||!nearSup(ds,'A')))out.push({id:ds+'|calc-am',en:'Amavasya (new moon)',hi:'अमावस्या',cat:'pa',calc:1,moon:'a',d:'New moon day.'});
+  return out;
+}
+function obs(ds,all,raw){
+  var out=[];
+  (FD[ds]||[]).forEach(function(f){if(all||catOn(f))out.push(f)});
+  calcObs(ds,raw).forEach(function(f){if(all||catOn(f))out.push(f)});
+  return out;
+}
+function findOb(id){
+  var ds=id.split('|')[0],l=obs(ds,true);
+  for(var i=0;i<l.length;i++)if(l[i].id===id)return l[i];
+  return null;
+}
+function nextWhere(from,pred,limit,raw){
+  for(var i=0;i<(limit||400);i++){var ds=addDays(from,i),l=obs(ds,true,raw);for(var j=0;j<l.length;j++)if(pred(l[j]))return {ds:ds,f:l[j]}}
+  return null;
+}
+function inLabel(n){return n===0?t('todayW'):n===1?t('tomorrow'):t('inDays')(n)}
+
+/* moon glyph */
+function moonSvg(e,size){
+  var r=size/2-1.5,c=size/2,R=Math.PI/180,rx=Math.abs(Math.cos(e*R))*r,d='';
+  if(e<180){var sw=e<90?0:1;d='M'+c+' '+(c-r)+' A'+r+' '+r+' 0 0 1 '+c+' '+(c+r)+' A'+rx+' '+r+' 0 0 '+sw+' '+c+' '+(c-r)+'Z'}
+  else{var sw2=e<270?0:1;d='M'+c+' '+(c-r)+' A'+r+' '+r+' 0 0 0 '+c+' '+(c+r)+' A'+rx+' '+r+' 0 0 '+sw2+' '+c+' '+(c-r)+'Z'}
+  return '<svg class="moon" width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" aria-hidden="true"><circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="var(--moon-dark)" stroke="var(--hero-mute)" stroke-opacity=".5"/><path d="'+d+'" fill="var(--moon)"/></svg>';
+}
+
+/* calendar rows */
+function calRows(ds){
+  var r=day(ds),rows=[],p=parse(ds),L=cfg.lang;
+  rows.push([t('greg'),fmtLong(ds),'']);
+  if(cfg.cals.panchang)rows.push([t('panchang'),monthName(r)+' '+pk(r)+' '+tname(r),(sysNow()==='purni'?t('purni'):t('amanta')).split(' (')[0]+' · '+t('atSunrise')+' '+cname(city())]);
+  if(cfg.cals.vs)rows.push([t('vs'),String(r.vs),'']);
+  if(cfg.cals.shaka)rows.push([t('shaka'),String(r.shaka),'']);
+  if(cfg.cals.nat)rows.push([t('nat'),r.nat.d+' '+(L==='hi'?E.NAT_HI:E.NAT)[r.nat.m]+' '+r.nat.y,'']);
+  if(cfg.cals.tamil)rows.push([t('tamil'),r.tamil.d+' '+E.TAMIL[r.tamil.m],E.TAMIL_TA[r.tamil.m]]);
+  if(cfg.cals.bengali)rows.push([t('bengali'),r.bengali.d+' '+E.BENGALI[r.bengali.m]+' '+r.bengali.y,E.BENGALI_BN[r.bengali.m]]);
+  if(cfg.cals.gujarati){var gi=r.gujMonth;rows.push([t('gujarati'),E.GUJ[gi]+' '+(r.paksha==='S'?'Sud':'Vad')+' '+r.tithi+(r.tithiIdx===29?' (Amas)':''),E.GUJ_GU[gi]+' · VS '+r.vsGuj]);}
+  return rows;
+}
+function rowsHtml(ds,skipFirst){
+  return '<dl class="rows" style="margin:0">'+calRows(ds).slice(skipFirst?1:0).map(function(x){return '<div class="crow"><dt>'+esc(x[0])+'</dt><dd>'+esc(x[1])+(x[2]?'<small>'+esc(x[2])+'</small>':'')+'</dd></div>'}).join('')+'</dl>';
+}
+function catColor(f){return f.cat==='vrat'?'var(--fast)':f.cat==='nat'?'var(--gold)':'var(--fest)'}
+
+/* TODAY */
+function renderToday(){
+  var ds=TODAY,r=day(ds),c=city(),p=parse(ds),wd=wday(ds);
+  var nx=nextWhere(ds,function(f){return !f.calc&&(f.cat==='major'||f.cat==='regional'&&regionOn(f))&&catOn(f)});
+  var nEk=nextWhere(ds,function(f){return f.ek},60,true),nMoon=nextWhere(ds,function(f){return f.moon},60,true),nFe=nextWhere(ds,function(f){return !f.calc&&f.cat==='vrat'},400);
+  var h='<section class="hero" style="--wdc:var(--wd'+wd+')"><div class="wdbar"></div><div class="hero-top"><span>'+WD[cfg.lang][wd]+'</span><span>'+esc(cname(c))+'</span></div>';
+  h+='<div class="hero-main"><div class="bignum">'+p.d+'</div><div class="hero-mo"><b>'+MO[cfg.lang][p.m-1]+'</b><span>'+p.y+'</span></div>'+moonSvg(r.e,64)+'</div>';
+  h+='<div class="hero-hindu">'+esc(monthName(r)+' '+pk(r)+' '+tname(r))+'</div><div class="hero-sub">'+esc(t('atSunrise')+' '+cname(c))+(r.adhika?'':'')+'</div>';
+  h+='<div class="stats"><div class="stat"><small>'+t('sunrise')+'</small><b>'+E.fmtMin(r.rise)+'</b></div><div class="stat"><small>'+t('sunset')+'</small><b>'+E.fmtMin(r.set)+'</b></div><div class="stat"><small>'+t('nak')+'</small><b>'+esc((cfg.lang==='hi'?E.NAK_HI:E.NAK_EN)[r.nak])+'</b></div></div><button class="hbtn" data-act="copy">'+t('copy')+'</button></section>';
+  if(nx){
+    var n=diff(ds,nx.ds),pd=parse(nx.ds);
+    h+='<div class="sec">'+t('next')+'</div><div class="card"><div class="next"><div class="when"><b>'+pd.d+'</b><small>'+MOS[cfg.lang][pd.m-1]+'</small></div><div class="what"><b>'+esc(fname(nx.f))+'</b><span>'+inLabel(n)+' · '+esc(fmtShort(nx.ds))+'</span></div></div>';
+    if(nx.f.d)h+='<p class="note" style="margin-top:10px">'+esc(nx.f.d)+'</p>';
+    if(nx.f.chk)h+='<p style="margin:8px 0 0"><span class="pill warn">'+t('chk')+'</span></p>';
+    h+='<div class="row" style="display:flex;gap:8px;margin-top:12px"><button class="btn" data-act="goto" data-ds="'+nx.ds+'">'+t('viewDay')+'</button>'+followBtn(nx.f)+'</div></div>';
+  }
+  h+='<div class="tiles">';
+  [['t1',t('qFast'),nFe],['t2',t('qEk'),nEk],['t3',t('qMoon'),nMoon]].forEach(function(q){
+    var x=q[2];if(!x){h+='<div class="tile '+q[0]+'"><small>'+q[1]+'</small><b>-</b></div>';return}
+    var pd=parse(x.ds);
+    h+='<button class="tile '+q[0]+'" data-act="goto" data-ds="'+x.ds+'"><small>'+q[1]+'</small><b>'+pd.d+' '+MOS[cfg.lang][pd.m-1]+'</b><span>'+inLabel(diff(ds,x.ds))+'</span></button>';
+  });
+  h+='</div>';
+  h+='<div class="sec">'+t('every')+'</div><div class="card">'+rowsHtml(ds)+'<div class="chips" aria-label="'+t('addCal')+'">';
+  [['tamil','Tamil'],['bengali','Bengali'],['gujarati','Gujarati'],['nat','Saka (National)']].forEach(function(k){h+='<button class="chip" data-act="calchip" data-k="'+k[0]+'" aria-pressed="'+(cfg.cals[k[0]]?'true':'false')+'">'+(cfg.cals[k[0]]?'':'+ ')+k[1]+'</button>'});
+  h+='</div></div>';
+  /* coming up */
+  var list=[],seen=0;
+  for(var i=1;i<=200&&list.length<5;i++){var d2=addDays(ds,i);obs(d2,false).forEach(function(f){if(list.length<5)list.push({ds:d2,f:f})})}
+  h+='<div class="sec">'+t('comingUp')+'</div><div class="card"><div class="list">';
+  if(!list.length)h+='<div class="empty">'+t('noObs')+'</div>';
+  list.forEach(function(x){var pd=parse(x.ds);h+='<button class="li" data-act="goto" data-ds="'+x.ds+'"><span class="dt"><b>'+pd.d+'</b><small>'+MOS[cfg.lang][pd.m-1]+'</small></span><span class="tx"><b>'+esc(fname(x.f))+'</b><span>'+inLabel(diff(ds,x.ds))+(x.f.calc?' · '+t('calc'):'')+'</span></span><span class="dot" style="--c:'+catColor(x.f)+'"></span></button>'});
+  h+='</div></div>';
+  h+='<div class="card"><h3 style="font-size:1.05rem;margin-bottom:6px">'+t('why')+'</h3><p class="note">'+t('whyT')+'</p></div>';
+  return h;
+}
+
+/* MONTH */
+function renderMonth(){
+  var y=view.y,m=view.m,L=cfg.lang;
+  var first=mk(y,m+1,1),dim=new Date(Date.UTC(y,m+1,0)).getUTCDate(),last=mk(y,m+1,dim);
+  var r1=day(first),r2=day(last);
+  var a=monthName(r1),b=monthName(r2);
+  var h='<div class="mhead"><button class="ib" data-act="mprev" aria-label="Previous month">&#8249;</button><div class="t"><h2>'+MO[L][m]+' '+y+'</h2><span>'+esc(a===b?a:a+' · '+b)+' · VS '+r2.vs+'</span></div><button class="ib" data-act="mtoday">'+t('todayW')+'</button><button class="ib" data-act="mnext" aria-label="Next month">&#8250;</button></div>';
+  var opts=[['tithi',t('secTithi')]];
+  if(cfg.cals.nat)opts.push(['nat','Saka']);if(cfg.cals.tamil)opts.push(['tamil','Tamil']);if(cfg.cals.bengali)opts.push(['bengali','Bengali']);
+  if(opts.length>1){h+='<div class="seg" role="group" aria-label="'+t('secA')+'">'+opts.map(function(o){return '<button class="chip" data-act="second" data-k="'+o[0]+'" aria-pressed="'+(cfg.second===o[0]?'true':'false')+'">'+o[1]+'</button>'}).join('')+'</div>'}
+  var sec=cfg.second;if(!opts.some(function(o){return o[0]===sec}))sec='tithi';
+  h+='<div class="dow">';
+  for(var i=0;i<7;i++){var wi=(i+cfg.ws)%7;h+='<div class="'+(wi===0?'sun':'')+'">'+WDS[L][wi]+'</div>'}
+  h+='</div><div class="grid">';
+  var f0=new Date(Date.UTC(y,m,1)).getUTCDay(),lead=(f0-cfg.ws+7)%7,total=Math.ceil((lead+dim)/7)*7;
+  for(var k=0;k<total;k++){
+    var ds=addDays(first,k-lead),pd=parse(ds),inM=pd.m===m+1,wd=wday(ds),r=day(ds),l=obs(ds,false);
+    var s,fi='';
+    if(sec==='tithi')s=tname(r);
+    else{var z=r[sec];var mm=sec==='nat'?(L==='hi'?E.NAT_HI:E.NAT)[z.m]:sec==='tamil'?E.TAMIL[z.m]:E.BENGALI[z.m];s=z.d===1?mm:String(z.d);fi=z.d===1?' first':''}
+    var marks='',mg='';var seenC={};
+    l.forEach(function(f){if(f.moon){mg='<span class="mg'+(f.moon==='a'?' a':'')+'"></span>';return}var c2=catColor(f);if(!seenC[c2]){seenC[c2]=1;marks+='<i style="--c:'+c2+'"></i>'}});
+    var cls='cell'+(inM?'':' out')+(ds===TODAY?' today':'')+(ds===view.sel?' sel':'')+(wd===0?' sun':'');
+    h+='<button class="'+cls+'" data-act="pick" data-ds="'+ds+'" aria-label="'+esc(fmtLong(ds)+', '+tname(r))+'">'+mg+'<span class="n">'+pd.d+'</span><span class="s'+fi+'">'+esc(s)+'</span><span class="marks">'+marks+'</span></button>';
+  }
+  h+='</div><div class="legend"><span><i class="dot" style="--c:var(--fest)"></i>'+t('legF')+'</span><span><i class="dot" style="--c:var(--fast)"></i>'+t('legV')+'</span><span><i class="dot" style="--c:var(--gold)"></i>'+t('legN')+'</span><span><i class="mg" style="position:static;display:inline-block"></i>'+t('legFull')+'</span><span><i class="mg a" style="position:static;display:inline-block"></i>'+t('legNew')+'</span></div>';
+  h+=detail(view.sel);
+  return h;
+}
+function followBtn(f){
+  var on=cfg.follow.some(function(x){return x.id===f.id});
+  return '<button class="btn'+(on?' on':'')+'" data-act="follow" data-id="'+esc(f.id)+'" aria-pressed="'+on+'">'+(on?t('following'):t('follow'))+'</button>';
+}
+function detail(ds){
+  var r=day(ds),wd=wday(ds),l=obs(ds,true),p=parse(ds);
+  var h='<section class="card det panel" style="--wdc:var(--wd'+wd+')"><div class="dhead"><span class="stripe"></span><div style="flex:1;min-width:0"><h3>'+esc(fmtLong(ds))+'</h3></div>'+moonSvg(r.e,44)+'</div>';
+  h+=rowsHtml(ds,true);
+  h+='<dl class="rows" style="margin:0"><div class="crow"><dt>'+t('sunrise')+' / '+t('sunset')+'</dt><dd>'+E.fmtMin(r.rise)+' / '+E.fmtMin(r.set)+'<small>'+esc(cname(city()))+'</small></dd></div><div class="crow"><dt>'+t('nak')+'</dt><dd>'+esc((cfg.lang==='hi'?E.NAK_HI:E.NAK_EN)[r.nak])+'</dd></div></dl>';
+  if(!l.length)h+='<div class="empty">'+t('noObs')+'</div>';
+  l.forEach(function(f){
+    var dim=!catOn(f)?' style="opacity:.55"':'';
+    h+='<div class="ob"'+dim+'><span class="dot" style="--c:'+(f.moon?'var(--muted)':catColor(f))+';margin-top:7px"></span><div class="tx"><b>'+esc(fname(f))+'</b><p>'+esc(f.d||'')+(f.ek?' '+t('fastNote'):'')+'</p>'+(f.chk?'<span class="pill warn">'+t('chk')+'</span> ':'')+(f.calc?'<span class="pill">'+t('calc')+'</span>':'')+'</div>'+(f.moon?'':followBtn(f))+'</div>';
+  });
+  if(ds<'2026-10-01'||ds>'2027-10-31')h+='<p class="note">'+t('outRange')+'</p>';
+  return h+'</section>';
+}
+
+/* REMINDERS */
+function leadLabel(n){return n===0?t('remSame'):n===1?t('rem1'):t('rem3')}
+function renderRemind(){
+  var items=[];
+  cfg.follow.forEach(function(x){var f=findOb(x.id);if(f)items.push({x:x,f:f,ds:x.id.split('|')[0]})});
+  items.sort(function(a,b){return a.ds<b.ds?-1:1});
+  var h='<h2 style="font-size:1.5rem">'+t('remTitle')+'</h2>';
+  if(cfg.sampled)h+='<p class="note">'+t('sample')+'</p>';
+  if(!items.length)h+='<div class="empty">'+t('remEmpty')+'</div>';
+  items.forEach(function(it){
+    var n=diff(TODAY,it.ds),pd=parse(it.ds),rd=addDays(it.ds,-it.x.lead);
+    h+='<div class="card rem"><div class="top"><span class="dt" style="flex:none;width:46px;text-align:center;line-height:1.05"><b style="display:block;font-family:var(--font-display);font-size:1.4rem">'+pd.d+'</b><small style="font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase">'+MOS[cfg.lang][pd.m-1]+'</small></span><div style="flex:1;min-width:0"><b style="display:block;overflow-wrap:anywhere">'+esc(fname(it.f))+'</b><span class="note">'+(n<0?'':inLabel(n)+' · ')+esc(fmtShort(it.ds))+'</span></div></div>';
+    h+='<div class="row"><select data-act="lead" data-id="'+esc(it.x.id)+'" aria-label="'+t('remOn')+'">'+[0,1,3].map(function(v){return '<option value="'+v+'"'+(it.x.lead===v?' selected':'')+'>'+leadLabel(v)+'</option>'}).join('')+'</select><span class="note">'+t('remOn')+' '+esc(fmtShort(rd))+'</span><button class="btn ghost warnbtn" data-act="unfollow" data-id="'+esc(it.x.id)+'">'+t('remove')+'</button></div></div>';
+  });
+  h+='<p class="note">'+t('remNote')+'</p>';
+  return h;
+}
+
+/* SETTINGS */
+function tog(group,k,label){return '<div class="srow"><label for="'+group+'-'+k+'">'+label+'</label><input class="sw" type="checkbox" id="'+group+'-'+k+'" data-act="tog" data-g="'+group+'" data-k="'+k+'"'+(cfg[group][k]?' checked':'')+'></div>'}
+function renderSet(){
+  var h='<h2 style="font-size:1.5rem">'+t('tSet')+'</h2><div class="card set">';
+  h+='<div class="srow"><label for="s-city">'+t('setCity')+'<small>'+t('setCityS')+'</small></label><select id="s-city" data-act="sel" data-k="city">'+CITIES.map(function(c){return '<option value="'+c.id+'"'+(cfg.city===c.id?' selected':'')+'>'+esc(cname(c))+'</option>'}).join('')+'</select></div>';
+  h+='<div class="srow"><label for="s-lang">'+t('setLang')+'</label><select id="s-lang" data-act="sel" data-k="lang"><option value="en"'+(cfg.lang==='en'?' selected':'')+'>English</option><option value="hi"'+(cfg.lang==='hi'?' selected':'')+'>हिन्दी</option></select></div>';
+  h+='<div class="srow"><label for="s-ws">'+t('setWeek')+'</label><select id="s-ws" data-act="sel" data-k="ws"><option value="0"'+(cfg.ws===0?' selected':'')+'>'+t('sun')+'</option><option value="1"'+(cfg.ws===1?' selected':'')+'>'+t('mon')+'</option></select></div>';
+  h+='<div class="srow"><label for="s-sys">'+t('setSys')+'</label><select id="s-sys" data-act="sel" data-k="sys"><option value="auto"'+(cfg.sys==='auto'?' selected':'')+'>'+t('auto')+'</option><option value="amanta"'+(cfg.sys==='amanta'?' selected':'')+'>'+t('amanta')+'</option><option value="purni"'+(cfg.sys==='purni'?' selected':'')+'>'+t('purni')+'</option></select></div></div>';
+  h+='<div class="sec">'+t('setCals')+'</div><div class="card set">'+tog('cals','panchang',t('panchang'))+tog('cals','vs',t('vs'))+tog('cals','shaka',t('shaka'))+tog('cals','nat',t('nat'))+tog('cals','tamil',t('tamil'))+tog('cals','bengali',t('bengali'))+tog('cals','gujarati',t('gujarati'))+'</div>';
+  h+='<div class="sec">'+t('setObs')+'</div><div class="card set">'+tog('show','major',t('oMajor'))+tog('show','vrat',t('oVrat'))+tog('show','pa',t('oPa'))+tog('show','nat',t('oNat'))+'</div>';
+  h+='<div class="sec">'+t('acc')+'</div><div class="card src"><p class="note">'+t('accT')+'</p><p class="note" style="margin-top:8px"><a href="https://dekhopanchang.com/en/calendar" target="_blank" rel="noopener">Dekho Panchang</a> · <a href="https://calendarific.com/holidays/2027/IN" target="_blank" rel="noopener">Calendarific India</a> · <a href="https://www.drikpanchang.com/calendars/hindu/hinducalendar.html?year=2027" target="_blank" rel="noopener">Drik Panchang</a></p></div>';
+  return h;
+}
+
+/* shell */
+var ICON={today:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',month:'<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',remind:'<path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z"/><path d="M10 21h4"/>',set:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>'};
+function render(){
+  document.documentElement.lang=cfg.lang==='hi'?'hi':'en';
+  var tabs=[['today',t('tToday')],['month',t('tMonth')],['remind',t('tRemind')],['set',t('tSet')]];
+  $('tabs').innerHTML=tabs.map(function(x){return '<button data-act="tab" data-k="'+x[0]+'"'+(cfg.tab===x[0]?' aria-current="page"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+ICON[x[0]]+'</svg>'+x[1]+'</button>'}).join('');
+  var h=cfg.tab==='today'?renderToday():cfg.tab==='month'?renderMonth():cfg.tab==='remind'?renderRemind():renderSet();
+  var keep=window.scrollY;
+  $('app').innerHTML=h;
+  $('app').className='wrap';
+}
+function go(tab){cfg.tab=tab;save();render();window.scrollTo(0,0)}
+document.addEventListener('click',function(ev){
+  var b=ev.target.closest('[data-act]');if(!b)return;var a=b.dataset.act;
+  if(a==='tab')return go(b.dataset.k);
+  if(a==='goto'){var p=parse(b.dataset.ds);view={y:p.y,m:p.m-1,sel:b.dataset.ds};return go('month')}
+  if(a==='pick'){view.sel=b.dataset.ds;var p2=parse(view.sel);if(p2.m-1!==view.m){view.y=p2.y;view.m=p2.m-1}var y0=window.scrollY;render();window.scrollTo(0,y0);return}
+  if(a==='mprev'||a==='mnext'){var d=new Date(Date.UTC(view.y,view.m+(a==='mnext'?1:-1),1));view.y=d.getUTCFullYear();view.m=d.getUTCMonth();view.sel=(view.y===now.getFullYear()&&view.m===now.getMonth())?TODAY:mk(view.y,view.m+1,1);return render()}
+  if(a==='mtoday'){view={y:now.getFullYear(),m:now.getMonth(),sel:TODAY};return render()}
+  if(a==='copy'){
+    var r0=day(TODAY),tx=fmtLong(TODAY)+'\n'+monthName(r0)+' '+pk(r0)+' '+tname(r0)+'\n'+t('vs')+' '+r0.vs+'\n'+t('sunrise')+' '+E.fmtMin(r0.rise)+', '+t('sunset')+' '+E.fmtMin(r0.set)+' ('+cname(city())+')';
+    var done=function(){b.textContent=t('copied');setTimeout(function(){b.textContent=t('copy')},1600)};
+    var fb=function(){var ta=document.createElement('textarea');ta.value=tx;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}document.body.removeChild(ta);done()};
+    try{navigator.clipboard.writeText(tx).then(done,fb)}catch(e){fb()}
+    return;
+  }
+  if(a==='second'){cfg.second=b.dataset.k;save();return render()}
+  if(a==='calchip'){cfg.cals[b.dataset.k]=cfg.cals[b.dataset.k]?0:1;save();return render()}
+  if(a==='follow'){var id=b.dataset.id,i=-1;cfg.follow.forEach(function(x,j){if(x.id===id)i=j});if(i>=0)cfg.follow.splice(i,1);else cfg.follow.push({id:id,lead:1});cfg.sampled=false;save();var y1=window.scrollY;render();window.scrollTo(0,y1);return}
+  if(a==='unfollow'){cfg.follow=cfg.follow.filter(function(x){return x.id!==b.dataset.id});save();return render()}
+});
+document.addEventListener('change',function(ev){
+  var b=ev.target.closest('[data-act]');if(!b)return;var a=b.dataset.act;
+  if(a==='tog'){cfg[b.dataset.g][b.dataset.k]=b.checked?1:0;save();return}
+  if(a==='sel'){var k=b.dataset.k,v=b.value;cfg[k]=(k==='ws')?+v:v;save();if(k==='city')C={};return render()}
+  if(a==='lead'){cfg.follow.forEach(function(x){if(x.id===b.dataset.id)x.lead=+b.value});save();return render()}
+});
+render();
+})();
+
+</script>
+
+</body>
+</html>
