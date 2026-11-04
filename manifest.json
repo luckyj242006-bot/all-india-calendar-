@@ -1,0 +1,25 @@
+{
+  "name": "All India Calendar & Vedic Panchang",
+  "short_name": "India Calendar",
+  "description": "Comprehensive All India Calendar, Vedic Panchang, Tithi, Nakshatra, and Festivals in 8 Languages",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0e5a60",
+  "theme_color": "#0e5a60",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "utilities"]
+}
