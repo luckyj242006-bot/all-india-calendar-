@@ -33,16 +33,39 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Build Standalone APK & AAB
+      - name: Configure Keystore and Minimum SDK 24
+        run: |
+          # 1. Decode keystore file
+          echo "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" | base64 -d > android/release.keystore
+
+          # 2. Update minSdkVersion to 24 for Google Play automatic protection
+          node -e "
+            const fs = require('fs');
+            let vg = fs.readFileSync('android/variables.gradle', 'utf8');
+            vg = vg.replace(/minSdkVersion\s*=\s*\d+/, 'minSdkVersion = 24');
+            fs.writeFileSync('android/variables.gradle', vg);
+
+            let bg = fs.readFileSync('android/app/build.gradle', 'utf8');
+            bg = bg.replace('buildTypes {', \`
+                signingConfigs {
+                    release {
+                        storeFile file('../release.keystore')
+                        storePassword '4S97JnubxmcX'
+                        keyAlias 'my-key-alias'
+                        keyPassword '4S97JnubxmcX'
+                    }
+                }
+                buildTypes {
+            \`);
+            bg = bg.replace('buildTypes {\\n        release {', 'buildTypes {\\n        release {\\n            signingConfig signingConfigs.release');
+            fs.writeFileSync('android/app/build.gradle', bg);
+          "
+
+      - name: Build Signed Standalone AAB & APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug bundleRelease
-
-      - name: Sign AAB for Google Play Console
-        run: |
-          echo "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" | base64 -d > release.keystore
-          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore release.keystore -storepass 4S97JnubxmcX -keypass 4S97JnubxmcX android/app/build/outputs/bundle/release/app-release.aab my-key-alias
+          ./gradlew bundleRelease assembleDebug
 
       - name: Upload Standalone APK (Install directly on phone)
         uses: actions/upload-artifact@v4
@@ -53,5 +76,5 @@ jobs:
       - name: Upload Signed Standalone AAB (Google Play Store)
         uses: actions/upload-artifact@v4
         with:
-          name: India-Calendar-Signed-AAB
+          name: India-Calendar-PlayStore-AAB
           path: android/app/build/outputs/bundle/release/*.aab
