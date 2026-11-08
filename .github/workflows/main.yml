@@ -23,14 +23,13 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Create Standalone Native App
         run: |
+          mkdir -p www
+          cp index.html manifest.json sw.js icon-192.png icon-512.png www/
           npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init "India Calendar" "com.joshi.allcalender" --web-dir "."
+          npm install @capacitor/core@6.1.2 @capacitor/cli@6.1.2 @capacitor/android@6.1.2
+          npx cap init "India Calendar" "com.joshi.allcalender" --web-dir "www"
           npx cap add android
           npx cap sync android
 
@@ -40,14 +39,14 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug bundleRelease
 
-      - name: Upload Standalone APK (Install on any phone)
+      - name: Upload Standalone APK (Install directly on phone)
         uses: actions/upload-artifact@v4
         with:
           name: India-Calendar-Standalone-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/*.apk
 
       - name: Upload Standalone AAB (Google Play Store)
         uses: actions/upload-artifact@v4
         with:
           name: India-Calendar-Standalone-AAB
-          path: android/app/build/outputs/bundle/release/app-release.aab
+          path: android/app/build/outputs/bundle/release/*.aab
