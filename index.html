@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
 <title>All India Calendar & Vedic Panchang 2026-2027</title>
 
 <link rel="manifest" href="manifest.json">
@@ -92,11 +92,14 @@ body {
 /* App Container */
 .container {
   max-width: 620px;
+  width: 100%;
   margin: 0 auto;
-  padding: 16px;
+  padding: 12px 8px 120px;
+  box-sizing: border-box;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 /* Animations */
@@ -578,34 +581,42 @@ body {
 /* Weekday header */
 .cal-dow-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
   text-align: center;
-  font-size: 0.75rem;
+  font-size: 0.70rem;
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
   margin-bottom: 6px;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 .cal-dow-grid .sun { color: var(--danger); }
 
 /* Day Cells */
 .cal-month-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  gap: 3px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 .cal-cell {
-  aspect-ratio: 1 / 1.24;
+  aspect-ratio: 1 / 1.25;
+  min-width: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
   background: var(--surface);
   border: 1.5px solid transparent;
-  border-radius: 12px;
-  padding: 5px 3px;
+  border-radius: 8px;
+  padding: 3px 1px !important;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
   position: relative;
+  overflow: hidden !important;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .cal-cell:hover {
@@ -624,10 +635,10 @@ body {
   background: var(--primary);
   color: #fff !important;
   box-shadow: 0 4px 14px rgba(14, 90, 96, 0.3);
-  transform: scale(1.04);
+  transform: scale(1.02);
 }
 .cal-cell.selected .cal-cell-tithi {
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 .cal-cell.sun .cal-cell-num {
   color: var(--danger);
@@ -636,28 +647,100 @@ body {
   color: #fff;
 }
 .cal-cell-num {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 700;
   line-height: 1;
 }
 .cal-cell-tithi {
-  font-size: 0.62rem;
+  font-size: 0.50rem !important;
   color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  display: block !important;
   font-weight: 500;
+  text-align: center;
+  line-height: 1.1;
+  padding: 0 1px;
 }
 .cal-indicators {
   display: flex;
-  gap: 3px;
+  gap: 2px;
   align-items: center;
-  min-height: 6px;
+  justify-content: center;
+  min-height: 5px;
 }
 .cal-dot {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--dot-color, var(--accent));
+}
+
+/* Agenda / Month List View Styles */
+.month-agenda-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.agenda-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.agenda-row:hover, .agenda-row.selected {
+  border-color: var(--primary);
+  background: rgba(14, 90, 96, 0.08);
+}
+.agenda-date-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.agenda-num {
+  font-size: 1.15rem;
+  font-weight: 800;
+  min-width: 28px;
+  text-align: center;
+}
+.agenda-dow {
+  font-size: 0.70rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.agenda-meta {
+  display: flex;
+  flex-direction: column;
+}
+.agenda-tithi {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.agenda-nak {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.agenda-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: var(--badge-fest);
+  color: #fff;
+  white-space: nowrap;
+}
   border-radius: 50%;
   background: var(--dot-color, var(--badge-fest));
 }
@@ -838,8 +921,9 @@ body {
   right: 0;
   background: var(--surface-glass);
   backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
-  padding: 8px 16px max(8px, env(safe-area-inset-bottom, 8px));
+  padding: 6px 12px max(28px, calc(env(safe-area-inset-bottom, 0px) + 20px));
   z-index: 100;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
 }
@@ -1456,6 +1540,7 @@ const TODAY_STR = formatDateKey(now.getFullYear(), now.getMonth() + 1, now.getDa
 let selectedDate = TODAY_STR;
 let viewYear = now.getFullYear();
 let viewMonth = now.getMonth(); // 0..11
+let calViewMode = 'grid'; // 'grid' or 'list'
 let activeFestCategory = 'all';
 let festivalSearchQuery = '';
 
@@ -1691,9 +1776,10 @@ function renderMonthView() {
   const selFestivals = FESTIVALS_DATA.filter(f => f.date === selectedDate);
   const selWeekdayIdx = new Date(Date.UTC(selParsed.y, selParsed.m - 1, selParsed.d)).getUTCDay();
 
-  // Grid cells generation
+  // Grid cells & Agenda rows generation
   let cellsHtml = '';
-  // Leading empty days or prev month days
+  let agendaHtml = '';
+
   for (let i = 0; i < startOffset; i++) {
     cellsHtml += `<div class="cal-cell other-month"></div>`;
   }
@@ -1710,7 +1796,6 @@ function renderMonthView() {
     if (fests.length > 0) {
       dotsHtml += `<span class="cal-dot" style="--dot-color:var(--badge-fest)"></span>`;
     }
-    // Full moon / New moon markers
     if (p.tithiIdx === 14) {
       dotsHtml += `<span class="cal-moon-icon">🌕</span>`;
     } else if (p.tithiIdx === 29) {
@@ -1724,6 +1809,23 @@ function renderMonthView() {
         <div class="cal-indicators">${dotsHtml}</div>
       </div>
     `;
+
+    // Row for Agenda / List View
+    agendaHtml += `
+      <div class="agenda-row ${isSelected ? 'selected' : ''}" data-date="${curKey}">
+        <div class="agenda-date-box">
+          <div style="display:flex; flex-direction:column; align-items:center; min-width:32px;">
+            <span class="agenda-num" style="${dayWeekday === 0 ? 'color:var(--danger);' : ''}">${d}</span>
+            <span class="agenda-dow">${langObj.weekdays[dayWeekday].slice(0, 3)}</span>
+          </div>
+          <div class="agenda-meta">
+            <span class="agenda-tithi">${langObj.lunarMonths[p.monthIdx]} ${p.paksha === 'S' ? 'Shukla' : 'Krishna'} ${langObj.tithis[p.tithiIdx % 15]}</span>
+            <span class="agenda-nak">✨ ${langObj.nakshatras[p.nak]} · 🌅 ${Eng.fmtMin(p.rise)}</span>
+          </div>
+        </div>
+        ${fests.length > 0 ? `<span class="agenda-badge">${cfg.lang === 'hi' && fests[0].hi ? fests[0].hi : fests[0].name}</span>` : ''}
+      </div>
+    `;
   }
 
   // DOW Row headers
@@ -1734,71 +1836,93 @@ function renderMonthView() {
   }
 
   return `
-    <div class="card anim-fade">
-      <div class="calendar-controls">
+    <div class="card anim-fade" style="padding:12px 6px;">
+      <div class="calendar-controls" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding:0 4px;">
         <div class="cal-title-block">
-          <h3>${langObj.months[viewMonth]} ${viewYear}</h3>
-          <p>Vikram Samvat ${selPanchang.vs} · ${city.name}</p>
+          <h3 style="font-size:1.15rem; font-weight:800; margin:0;">${langObj.months[viewMonth]} ${viewYear}</h3>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin:2px 0 0;">Vikram Samvat ${selPanchang.vs} · ${city.name}</p>
         </div>
-        <div class="cal-nav-btns">
-          <button class="btn sm" id="btnPrevMonth">◀</button>
-          <button class="btn sm" id="btnCurrentMonth">${t('tToday')}</button>
-          <button class="btn sm" id="btnNextMonth">▶</button>
+        <div style="display:flex; gap:5px; align-items:center;">
+          <!-- View switcher (Grid / List) -->
+          <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:2px;">
+            <button class="btn sm" id="btnViewGrid" style="padding:4px 8px; font-size:0.72rem; border:none; ${calViewMode === 'grid' ? 'background:var(--primary); color:#fff;' : 'background:transparent; color:var(--text);'}">⊞ Grid</button>
+            <button class="btn sm" id="btnViewList" style="padding:4px 8px; font-size:0.72rem; border:none; ${calViewMode === 'list' ? 'background:var(--primary); color:#fff;' : 'background:transparent; color:var(--text);'}">☰ List</button>
+          </div>
+          <!-- Navigation buttons -->
+          <button class="btn sm" id="btnPrevMonth" style="padding:4px 8px;">◀</button>
+          <button class="btn sm" id="btnCurrentMonth" style="padding:4px 8px;">${t('tToday')}</button>
+          <button class="btn sm" id="btnNextMonth" style="padding:4px 8px;">▶</button>
         </div>
       </div>
 
-      <div class="cal-dow-grid">${dowHtml}</div>
-      <div class="cal-month-grid">${cellsHtml}</div>
+      ${calViewMode === 'grid' ? `
+        <div class="cal-dow-grid">${dowHtml}</div>
+        <div class="cal-month-grid">${cellsHtml}</div>
+      ` : `
+        <div class="month-agenda-list">${agendaHtml}</div>
+      `}
     </div>
 
     <!-- Selected Date Details Drawer -->
-    <div class="card anim-fade" style="margin-top:14px;">
-      <div class="day-details-header">
+    <div class="card anim-fade" style="margin-top:12px; padding:16px;">
+      <div class="day-details-header" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
         <div class="day-details-title">
-          <h3>${langObj.weekdays[selWeekdayIdx]}, ${selParsed.d} ${langObj.months[selParsed.m - 1]} ${selParsed.y}</h3>
-          <p>${langObj.lunarMonths[selPanchang.monthIdx]} ${selPanchang.paksha === 'S' ? 'Shukla' : 'Krishna'} ${langObj.tithis[selPanchang.tithiIdx % 15]}</p>
+          <h3 style="font-size:1.2rem; font-weight:800; margin:0;">${langObj.weekdays[selWeekdayIdx]}, ${selParsed.d} ${langObj.months[selParsed.m - 1]} ${selParsed.y}</h3>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin:3px 0 0;">${langObj.lunarMonths[selPanchang.monthIdx]} ${selPanchang.paksha === 'S' ? 'Shukla' : 'Krishna'} ${langObj.tithis[selPanchang.tithiIdx % 15]}</p>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
           ${getMoonSvg(selPanchang.e, 44)}
         </div>
       </div>
 
-      <!-- Sun & Nakshatra for selected day -->
-      <div class="sun-stats-grid" style="margin-bottom:12px;">
-        <div class="stat-pill" style="background:var(--bg); border-color:var(--border);">
-          <small style="color:var(--text-muted);">${t('sunrise')}</small>
-          <b style="color:var(--text);">🌅 ${Eng.fmtMin(selPanchang.rise)}</b>
+      <!-- Regional Calendars Mini Badges -->
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;">
+        <span style="font-size:0.72rem; padding:3px 8px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:600;">🕉️ Vikram ${selPanchang.vs}</span>
+        <span style="font-size:0.72rem; padding:3px 8px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:600;">🏛️ Shaka ${selPanchang.vs - 135}</span>
+        <span style="font-size:0.72rem; padding:3px 8px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-weight:600;">📍 ${city.name}</span>
+      </div>
+
+      <!-- Sun, Nakshatra, Muhurat 4-Grid -->
+      <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; margin-bottom:12px;">
+        <div class="stat-pill" style="background:var(--bg); border:1px solid var(--border); padding:8px 10px; border-radius:8px;">
+          <small style="color:var(--text-muted); font-size:0.70rem;">${t('sunrise')} / ${t('sunset')}</small>
+          <b style="color:var(--text); font-size:0.82rem; display:block; margin-top:2px;">🌅 ${Eng.fmtMin(selPanchang.rise)} · 🌇 ${Eng.fmtMin(selPanchang.set)}</b>
         </div>
-        <div class="stat-pill" style="background:var(--bg); border-color:var(--border);">
-          <small style="color:var(--text-muted);">${t('sunset')}</small>
-          <b style="color:var(--text);">🌇 ${Eng.fmtMin(selPanchang.set)}</b>
+        <div class="stat-pill" style="background:var(--bg); border:1px solid var(--border); padding:8px 10px; border-radius:8px;">
+          <small style="color:var(--text-muted); font-size:0.70rem;">${t('nak')}</small>
+          <b style="color:var(--text); font-size:0.82rem; display:block; margin-top:2px;">✨ ${langObj.nakshatras[selPanchang.nak]}</b>
         </div>
-        <div class="stat-pill" style="background:var(--bg); border-color:var(--border);">
-          <small style="color:var(--text-muted);">${t('nak')}</small>
-          <b style="color:var(--text);">✨ ${langObj.nakshatras[selPanchang.nak]}</b>
+        <div class="stat-pill" style="background:rgba(16,185,129,0.08); border:1px solid #86efac; padding:8px 10px; border-radius:8px;">
+          <small style="color:var(--success); font-size:0.70rem; font-weight:700;">✨ ${t('abhijit')}</small>
+          <b style="color:var(--text); font-size:0.82rem; display:block; margin-top:2px;">${Eng.fmtMin(selPanchang.abhijit.start)} - ${Eng.fmtMin(selPanchang.abhijit.end)}</b>
+        </div>
+        <div class="stat-pill" style="background:rgba(239,68,68,0.08); border:1px solid #fca5a5; padding:8px 10px; border-radius:8px;">
+          <small style="color:var(--danger); font-size:0.70rem; font-weight:700;">⚠️ ${t('rahuKaal')}</small>
+          <b style="color:var(--text); font-size:0.82rem; display:block; margin-top:2px;">${Eng.fmtMin(selPanchang.rahuKaal.start)} - ${Eng.fmtMin(selPanchang.rahuKaal.end)}</b>
         </div>
       </div>
 
       <!-- Observances / Festivals on this date -->
       ${selFestivals.length > 0 ? `
-        <div style="margin-top:10px;">
-          <h5 style="font-size:0.85rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px;">Observances & Festivals</h5>
+        <div style="margin-top:12px; border-top:1px solid var(--border); padding-top:10px;">
+          <h5 style="font-size:0.80rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Observances & Festivals</h5>
           ${selFestivals.map(f => `
-            <div class="obs-item">
-              <span class="obs-badge" style="background:${f.cat === 'major' ? 'var(--badge-fest)' : 'var(--badge-vrat)'}"></span>
-              <div class="obs-content">
-                <h5>${cfg.lang === 'hi' && f.hi ? f.hi : f.name}</h5>
-                <p>${f.desc}</p>
-                <div style="display:flex; gap:8px; margin-top:6px;">
-                  <button class="btn sm btn-ics" data-name="${f.name}" data-date="${f.date}">📥 ${t('addToCal')}</button>
-                  <button class="btn sm btn-remind" data-id="${f.date}|${f.name}">🔔 ${cfg.reminders.includes(f.date + '|' + f.name) ? t('following') : t('setRemind')}</button>
+            <div class="obs-item" style="display:flex; gap:10px; align-items:flex-start; margin-bottom:10px;">
+              <span class="obs-badge" style="background:${f.cat === 'major' ? 'var(--badge-fest)' : 'var(--badge-vrat)'}; width:10px; height:10px; border-radius:50%; margin-top:5px; flex-shrink:0;"></span>
+              <div class="obs-content" style="flex:1;">
+                <h5 style="margin:0; font-size:0.95rem; font-weight:700;">${cfg.lang === 'hi' && f.hi ? f.hi : f.name}</h5>
+                <p style="margin:3px 0 0; font-size:0.80rem; color:var(--text-muted); line-height:1.3;">${f.desc}</p>
+                <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                  <button class="btn sm btn-wa-share" data-date="${f.date}" data-fest="${f.name}" style="background:#25D366; color:#fff; border:none; padding:4px 10px; font-size:0.75rem;">📲 WhatsApp</button>
+                  <button class="btn sm btn-ics" data-name="${f.name}" data-date="${f.date}" style="padding:4px 10px; font-size:0.75rem;">📥 ${t('addToCal')}</button>
+                  <button class="btn sm btn-remind" data-id="${f.date}|${f.name}" style="padding:4px 10px; font-size:0.75rem;">🔔 ${cfg.reminders.includes(f.date + '|' + f.name) ? t('following') : t('setRemind')}</button>
                 </div>
               </div>
             </div>
           `).join('')}
         </div>
       ` : `
-        <p style="font-size:0.85rem; color:var(--text-muted); padding:10px 0;">No major fasts or festivals recorded on this day.</p>
+        <p style="font-size:0.82rem; color:var(--text-muted); margin:6px 0 0;">No major fasts or festivals recorded on this day.</p>
       `}
     </div>
   `;
@@ -2122,6 +2246,50 @@ document.addEventListener('click', (e) => {
     saveCfg();
     render();
     triggerConfetti();
+    return;
+  }
+
+  // View Switcher (Grid / List)
+  if (e.target.closest('#btnViewGrid')) {
+    calViewMode = 'grid';
+    render();
+    return;
+  }
+  if (e.target.closest('#btnViewList')) {
+    calViewMode = 'list';
+    render();
+    return;
+  }
+
+  // Agenda List Row select
+  const agendaRow = e.target.closest('.agenda-row[data-date]');
+  if (agendaRow) {
+    selectedDate = agendaRow.dataset.date;
+    render();
+    return;
+  }
+
+  // WhatsApp Share button on selected day
+  const waBtn = e.target.closest('.btn-wa-share');
+  if (waBtn) {
+    e.stopPropagation();
+    const dStr = waBtn.dataset.date;
+    const fName = waBtn.dataset.fest || '';
+    const p = parseDateKey(dStr);
+    const city = getCity();
+    const pan = Eng.computePanchang(p.y, p.m, p.d, city);
+    const langObj = I18N[cfg.lang] || I18N.en;
+
+    const waText = `🌸 *${fName ? fName + ' · ' : ''}${dStr} Panchang*\n` +
+      `✨ Tithi: ${langObj.lunarMonths[pan.monthIdx]} ${pan.paksha === 'S' ? 'Shukla' : 'Krishna'} ${langObj.tithis[pan.tithiIdx % 15]}\n` +
+      `🌅 Sunrise: ${Eng.fmtMin(pan.rise)} | Sunset: ${Eng.fmtMin(pan.set)}\n` +
+      `🌟 Nakshatra: ${langObj.nakshatras[pan.nak]}\n` +
+      `⏱️ Abhijit: ${Eng.fmtMin(pan.abhijit.start)} - ${Eng.fmtMin(pan.abhijit.end)}\n` +
+      `⚠️ Rahu Kaal: ${Eng.fmtMin(pan.rahuKaal.start)} - ${Eng.fmtMin(pan.rahuKaal.end)}\n\n` +
+      `Shared from All India Calendar & Vedic Panchang`;
+
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`;
+    window.open(waUrl, '_blank');
     return;
   }
 
